@@ -1,18 +1,22 @@
 from __future__ import print_function
-
 import bs4
 import requests
 from getpass import getpass
-
+import time 
+import sys
 from configparser import ConfigParser
 
-TRIGGER_URL = 'http://192.168.1.1/'
+# TRIGGER_URL = 'http://192.168.1.1/'
 
-AUTH_URL = 'http://172.16.1.11:1000/fgtauth?'
+# AUTH_URL = 'http://172.16.1.11:1000/fgtauth?'
+
+KEEP_ALIVE_URL = 'http://172.16.1.11:1000/keepalive?05030309060a0423'
 
 CONFIG_FILE = '.env'
 
-class ConfigClass():
+TIMEOUT = 1000
+
+class ConfigClass(object):
 
     def __init__(self, 
                 USERNAME=None, 
@@ -78,7 +82,8 @@ class ConfigClass():
         with requests.Session() as ses:
             
             headers = {
-                    'user-agent':'Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36',
+                'connection':'keep-alive',
+                'user-agent':'Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36',
                 }
             
             res = ses.post(_AUTH_URL, data=login_data, headers=headers)
@@ -101,8 +106,17 @@ class ConfigClass():
 
                 print('Successfully logged in!')
 
+                while True:
+
+                    for remaining in range(1000, 0, -1):
+                        sys.stdout.write("\r")
+                        sys.stdout.write("{:2d} seconds remaining.".format(remaining)) 
+                        sys.stdout.flush()
+                        time.sleep(1)
+
+                    ses.get(KEEP_ALIVE_URL, headers=headers)
+
 if __name__ == '__main__':
     conf = ConfigClass()
     conf.initConfig()
     conf.loginIntranet()
-
