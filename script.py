@@ -6,10 +6,6 @@ import time
 import sys
 from configparser import ConfigParser
 
-# TRIGGER_URL = 'http://192.168.1.1/'
-
-# AUTH_URL = 'http://172.16.1.11:1000/fgtauth?'
-
 KEEP_ALIVE_URL = 'http://172.16.1.11:1000/keepalive?05030309060a0423'
 
 CONFIG_FILE = '.env'
@@ -66,6 +62,30 @@ class ConfigClass(object):
 
     def loginIntranet(self):
         
+        # Add `try...except` block for logging into the intranet. Makes more sense
+        # for the whole flow of the connection. Also modularize the functions for 
+        # different tasks.
+        # 1 -> Check if already the connection exists.
+        #   1.1 -> If exixts jump to the section to resend the keepalive request
+        #   1.2 -> If not, establish the connection the normal way 
+        
+        # try:
+        #   status = check_connection()
+        #   
+        # if status == 200:
+        #   keep_me_alive()
+        # 
+        # except ConnectionError:
+        #   try:
+        #       normal_login_flow()
+        #
+        #   except Exception as e:
+        #       print(e.reason)
+        #       retry_logic_for_login()
+        #   
+        #   finally:
+        #       keep_me_alive()
+
         res = requests.get(self.TRIGGER_URL)
         
         soup = bs4.BeautifulSoup(res.content, 'html5lib')
@@ -82,13 +102,10 @@ class ConfigClass(object):
         with requests.Session() as ses:
             
             headers = {
-                'connection':'keep-alive',
                 'user-agent':'Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36',
                 }
             
             res = ses.post(_AUTH_URL, data=login_data, headers=headers)
-
-            # print(res.next)
 
             soup = bs4.BeautifulSoup(res.content, 'html5lib')
 
@@ -108,11 +125,13 @@ class ConfigClass(object):
 
                 while True:
 
-                    for remaining in range(1000, 0, -1):
+                    for remaining in range(TIMEOUT, 0, -1):
                         sys.stdout.write("\r")
                         sys.stdout.write("{:2d} seconds remaining.".format(remaining)) 
                         sys.stdout.flush()
                         time.sleep(1)
+
+                    headers['connection'] = 'keep-alive'
 
                     ses.get(KEEP_ALIVE_URL, headers=headers)
 
