@@ -1,4 +1,4 @@
-# IIIT-Bh Firewall Auth from CLI
+# IIIT-Bh Firewall Auth from CLI :man_firefighter:
 
 `(For servers with no GUI :computer:)`
 
@@ -14,3 +14,10 @@ pip install -r requirements.txt
 # login to IIIT's firewall
 python script.py
 ```
+
+#### To Do's:
+ - [ ] Maintain a session :squirrel:
+ - [ ] Add daemon mode of opertaion :secret:
+ - [ ] Feature to detect if the system is already authenticated :id:
+ - [ ] Modularize the program and ship as package :gift:
+ - [ ] Design a beautiful CLI :heart:
